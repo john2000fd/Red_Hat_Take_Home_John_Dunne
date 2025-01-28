@@ -6,7 +6,7 @@ from datetime import *
 
 def image_Times():
 
-    # repository holding the Red Hat build of Keycloak’s container image history 
+    # API repository holding the Red Hat build of Keycloak’s container image history 
     repository_images = "https://catalog.redhat.com/api/containers/v1/repositories/registry/registry.access.redhat.com/repository/rhbk/keycloak-rhel9/images"
 
     # Here we are doing a GET request to the red hat Keycloak repo
@@ -43,10 +43,46 @@ def image_Times():
 
 
 
-# function to determine the release and version of the image 
-def versions_Release(times, image_dict):
-    # list to store versions and releases 
+# function to determine the version of each image 
+def versions():
+    # list to store versions 
     version = []
+
+    repository_images = "https://catalog.redhat.com/api/containers/v1/repositories/registry/registry.access.redhat.com/repository/rhbk/keycloak-rhel9/images"
+
+    # Here we are doing a GET request to the red hat Keycloak repo
+    repo_Response = requests.get(repository_images)
+
+    # this deseriealizes the JSON to a python obj so we can read it 
+    text = json.loads(repo_Response.text)
+
+    # data is the key which holds all of the image's info
+    image_info = text.get('data', [])
+    # Loop through each image
+    for info in image_info:
+        #we retrieve the 'parsed data' info
+        image_data = info.get('parsed_data', {})
+        #then we loop through the data in the parsed data dictionary to get to 'labels' where version is stored 
+        
+        # we then retrieve the 'labels' info              # issue due to trying to loop over labels as if they were individual items, and not part of the 'parsed_data' dictionary.
+        label_info = image_data.get('labels', [])
+
+        # loop through the list of labels 
+        for label in label_info:
+            if label['name'] == 'version':    # set each version as a seperate entry in the list
+                vers = label['value']
+                version.append(vers)
+            else:
+                continue
+
+
+    print(version)                
+
+    
+
+# function to determine the version of each image 
+def release():
+    # list to store release info
     release = []
 
     repository_images = "https://catalog.redhat.com/api/containers/v1/repositories/registry/registry.access.redhat.com/repository/rhbk/keycloak-rhel9/images"
@@ -64,21 +100,20 @@ def versions_Release(times, image_dict):
         #we retrieve the 'parsed data' info
         image_data = info.get('parsed_data', {})
         #then we loop through the data in the parsed data dictionary to get to 'labels' where version is stored 
-        for image in image_data:
-            # we then retrieve the 'labels' info
-            label_info = image.get('labels', [])
+        
+        # we then retrieve the 'labels' info              
+        label_info = image_data.get('labels', [])
 
-            if 'version' in label_info:
-                vers = image.get('version')
-                version.append(vers)
+        # loop through the list of labels 
+        for label in label_info:
+            if label['name'] == 'release':     # set each version as a seperate entry in the list
+                vers = label['value']
+                release.append(vers)
             else:
-                print("Error")
+                continue
 
 
-    print(version)                
-
-    
-
+    print(release)     
     
     
 
@@ -96,7 +131,8 @@ if __name__ == "__main__":
     }
 
     times = image_Times()
-    res = versions_Release(times, image_Dict)
+    res_release = release()
+    res_vers = versions()
 
 
 
