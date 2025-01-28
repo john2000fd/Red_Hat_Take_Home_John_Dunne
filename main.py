@@ -39,9 +39,7 @@ def image_Times():
             else:
                 print("error")
                 break    
-    print(dates)
-    print("")
-    print("")
+    
     return dates
 
 
@@ -79,9 +77,7 @@ def release():
                 continue
 
 
-    print(release)
-    print("")
-    print("")     
+      
     return release
 
 
@@ -120,9 +116,7 @@ def versions():
                 continue
 
 
-    print(version)        
-    print("")
-    print("")        
+           
     return version
 
 
@@ -155,9 +149,7 @@ def vcs_Ref():
                 vcs.append(vers)
             else:
                 continue
-    print(vcs)        
-    print("")
-    print("")        
+            
     return vcs            
 
 
@@ -187,9 +179,7 @@ def fresh_Grade():
             else:
                 print("error")
                 break    
-    print(grades)        
-    print("")
-    print("")        
+        
     return grades
 
 
@@ -198,31 +188,43 @@ def fresh_Grade():
 
 def find_Newest(times, res_vers, res_release, vcs_ref, fresh_grade):
 
-    # first we are going to create our dictionary by merging the three lists: times, res_release, res_vers
+    # first we are going to create our dictionary by merging the 5 lists
     # we are going to use zip(), loop, defaultdict() 
     solution = defaultdict(list)
     # then we are going to loop over the 5 lists simultaneously to create our new dictionary
     for a, b, c, d, e in zip(times, res_vers, res_release,vcs_ref, fresh_grade):
-        solution[a].append((b,c,d,e))
+        solution[b].append((a,c,d,e))
 
-    #print("The merged key value dictionary is : " + str(dict(solution)))
-
-    # converting to a set to remove duplicates in dictioanery due to architecture e.g ppc64le, amd64 
+    # converting to a set to remove duplicates in dictionary due to architecture e.g ppc64le, amd64 
     for main in solution:
         solution[main] = list(set(solution[main]))
 
     print("The merged key value dictionary is : " + str(dict(solution)))
+    
+
+    # here we are getting the most recent time for each key
+    most_recent = {} 
+    for main, entries in solution.items():
+        # want to sort entries by time, which is the first element of the tuple 
+        sorted_entries = sorted(entries, key=lambda x: datetime.fromisoformat(x[0]), reverse=True)
+        most_recent[main] = sorted_entries[0]  # pick the most recent entry for the newest time for each version
+    
+    print("The most recent time entry for each key is:", most_recent)
+
+    return most_recent
+
+# final function to print our final answer
+def printing(input_list):
+    # create a new list for answer
+    answer = []
+
+    # convert Python to JSON  
+    json_object = json.dumps(input_list, indent = 4) 
+    print(json_object)
 
 
 
-
-if __name__ == "__main__":
-
-    # Here we have a dictionary used to store the info of each instance so we can determine the most recent image of each 
-    image_Dict = {
-        "contentStream": "",
-        "publishedDate": ""
-    }
+if __name__ == "__main__":  
 
     times = image_Times()
     res_vers = versions()
@@ -231,6 +233,8 @@ if __name__ == "__main__":
     fresh_grade = fresh_Grade()
     
     comb_time_rel_vers = find_Newest(times, res_vers, res_release, vcs_ref, fresh_grade)
+
+    printing(comb_time_rel_vers)
 
 
     
