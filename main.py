@@ -217,9 +217,16 @@ def find_Newest(times, res_vers, res_release, vcs_ref, fresh_grade):
 def printing(input_list):
     # create a new list for answer
     answer = []
-
+    # loop over our inputted dictionary using the key value pair x,y
+    for x, y in input_list.items():
+        dict = {
+            "contentStream": x,
+            "vcsRef": y[2],
+            "publishedDate": y[0],
+            "freshnessGrade": y[3]
+        }
     # convert Python to JSON  
-    json_object = json.dumps(input_list, indent = 4) 
+    json_object = json.dumps(dict, indent = 4) 
     print(json_object)
 
 
