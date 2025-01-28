@@ -4,22 +4,12 @@ from datetime import *
 from collections import defaultdict 
  
 
+
+
 # function to determine the published_date of each image
-def image_Times():
+def image_Times(text):
 
-    # API repository holding the Red Hat build of Keycloak’s container image history 
-    repository_images = "https://catalog.redhat.com/api/containers/v1/repositories/registry/registry.access.redhat.com/repository/rhbk/keycloak-rhel9/images"
-
-    # Here we are doing a GET request to the red hat Keycloak repo
-    repo_Response = requests.get(repository_images)
-
-    # Testing to make sure we are getting a successful call
-    # As the status code we receive is 200, we know the server successfully processed the request  
-    print(repo_Response.status_code)
-
-    # this deseriealizes the JSON to a python obj so we can read it 
-    text = json.loads(repo_Response.text)
-
+    
     # data is the key which holds all of the image's info
     image_info = text.get('data', [])
     
@@ -44,18 +34,12 @@ def image_Times():
 
 
 
+
+
 # function to determine the release of each image 
-def release():
+def release(text):
     # list to store release info
     release = []
-
-    repository_images = "https://catalog.redhat.com/api/containers/v1/repositories/registry/registry.access.redhat.com/repository/rhbk/keycloak-rhel9/images"
-
-    # Here we are doing a GET request to the red hat Keycloak repo
-    repo_Response = requests.get(repository_images)
-
-    # this deseriealizes the JSON to a python obj so we can read it 
-    text = json.loads(repo_Response.text)
 
     # data is the key which holds all of the image's info
     image_info = text.get('data', [])
@@ -75,26 +59,19 @@ def release():
                 release.append(vers)
             else:
                 continue
-
-
       
     return release
 
 
 
 
+
+
+
 # function to determine the version of each image 
-def versions():
+def versions(text):
     # list to store versions 
     version = []
-
-    repository_images = "https://catalog.redhat.com/api/containers/v1/repositories/registry/registry.access.redhat.com/repository/rhbk/keycloak-rhel9/images"
-
-    # Here we are doing a GET request to the red hat Keycloak repo
-    repo_Response = requests.get(repository_images)
-
-    # this deseriealizes the JSON to a python obj so we can read it 
-    text = json.loads(repo_Response.text)
 
     # data is the key which holds all of the image's info
     image_info = text.get('data', [])
@@ -120,16 +97,14 @@ def versions():
     return version
 
 
-def vcs_Ref():
+
+
+
+
+def vcs_Ref(text):
+    
+    # list to store the vcs-ref values 
     vcs = []
-
-    repository_images = "https://catalog.redhat.com/api/containers/v1/repositories/registry/registry.access.redhat.com/repository/rhbk/keycloak-rhel9/images"
-
-    # Here we are doing a GET request to the red hat Keycloak repo
-    repo_Response = requests.get(repository_images)
-
-    # this deseriealizes the JSON to a python obj so we can read it 
-    text = json.loads(repo_Response.text)
 
     # data is the key which holds all of the image's info
     image_info = text.get('data', [])
@@ -154,17 +129,11 @@ def vcs_Ref():
 
 
 
+
 # function to retrieve freshness_grade of each image
-def fresh_Grade():
+def fresh_Grade(text):
+    # list to store the grade values
     grades = []
-
-    repository_images = "https://catalog.redhat.com/api/containers/v1/repositories/registry/registry.access.redhat.com/repository/rhbk/keycloak-rhel9/images"
-
-    # Here we are doing a GET request to the red hat Keycloak repo
-    repo_Response = requests.get(repository_images)
-
-    # this deseriealizes the JSON to a python obj so we can read it 
-    text = json.loads(repo_Response.text)
 
     # data is the key which holds all of the image's info
     image_info = text.get('data', [])
@@ -179,12 +148,14 @@ def fresh_Grade():
             else:
                 print("error")
                 break    
-        
+
+    print()    
     return grades
 
 
 
 
+# function to determine what our most recent image in each content stream is 
 
 def find_Newest(times, res_vers, res_release, vcs_ref, fresh_grade):
 
@@ -195,23 +166,21 @@ def find_Newest(times, res_vers, res_release, vcs_ref, fresh_grade):
     for a, b, c, d, e in zip(times, res_vers, res_release,vcs_ref, fresh_grade):
         solution[b].append((a,c,d,e))
 
-    # converting to a set to remove duplicates in dictionary due to architecture e.g ppc64le, amd64 
+    # converting to a set then back to a list to remove duplicates in dictionary due to architecture e.g ppc64le, amd64 
     for main in solution:
         solution[main] = list(set(solution[main]))
-
-    print("The merged key value dictionary is : " + str(dict(solution)))
     
 
-    # here we are getting the most recent time for each key
-    most_recent = {} 
+    # here we are getting the most recent time for each key 22, 26.0, 24
+    most_recent = {}  #use an empty dictionary
     for main, entries in solution.items():
         # want to sort entries by time, which is the first element of the tuple 
         sorted_entries = sorted(entries, key=lambda x: datetime.fromisoformat(x[0]), reverse=True)
         most_recent[main] = sorted_entries[0]  # pick the most recent entry for the newest time for each version
-    
-    print("The most recent time entry for each key is:", most_recent)
 
     return most_recent
+
+
 
 # final function to print our final answer
 def printing(input_list):
@@ -220,27 +189,53 @@ def printing(input_list):
     # loop over our inputted dictionary using the key value pair x,y
     for x, y in input_list.items():
         dict = {
-            "contentStream": x,
+            "contentStream": x,   # x is our key, y are our values
             "vcsRef": y[2],
             "publishedDate": y[0],
             "freshnessGrade": y[3]
         }
-    # convert Python to JSON  
-    json_object = json.dumps(dict, indent = 4) 
-    print(json_object)
+        # insted of just converting one, make sure to loop over the dictionary values to get all 3
+        answer.append(dict)
+    # convert Python to JSON, indent 4 for pretty printing   
+    json_answer= json.dumps(answer, indent = 4) 
+    print(json_answer)
 
 
 
+
+
+# main function of the program
 if __name__ == "__main__":  
 
-    times = image_Times()
-    res_vers = versions()
-    res_release = release()
-    vcs_ref = vcs_Ref()
-    fresh_grade = fresh_Grade()
+    #API repository holding the Red Hat build of Keycloak’s container image history 
+    repository_images = "https://catalog.redhat.com/api/containers/v1/repositories/registry/registry.access.redhat.com/repository/rhbk/keycloak-rhel9/images"
+
+    #Here we are doing a GET request to the red hat Keycloak repo
+    repo_Response = requests.get(repository_images)
+
+    # Testing to make sure we are getting a successful call
+    # As the status code we receive is 200, we know the server successfully processed the request and returned 200
+    print(repo_Response.status_code)
+
+    # this deseriealizes the JSON to a python obj so we can read it, and feed it to our functions for evaluation
+    # we pass this to our evaluation functions to isolate information we need such as version and release
+    text = json.loads(repo_Response.text)
+
+    # Getting published_date of each image
+    times = image_Times(text)
+    # function to determine the version of each image 
+    res_vers = versions(text)
+    # function to determine the release of each image 
+    res_release = release(text)
+    # function to determine the vcs_Ref of each image
+    vcs_ref = vcs_Ref(text)
+    # function to determine the freshness_grade of each image
+    fresh_grade = fresh_Grade(text)
     
+    # function to determine our newest image in each content stream is 
     comb_time_rel_vers = find_Newest(times, res_vers, res_release, vcs_ref, fresh_grade)
 
+    # function to print our final answer
     printing(comb_time_rel_vers)
 
 
