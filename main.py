@@ -1,6 +1,7 @@
 import requests
 import json
 from datetime import *
+from collections import defaultdict 
  
 
 
@@ -38,6 +39,9 @@ def image_Times():
             else:
                 print("error")
                 break    
+    print(dates)
+    print("")
+    print("")
     return dates
 
 
@@ -64,7 +68,7 @@ def versions():
         image_data = info.get('parsed_data', {})
         #then we loop through the data in the parsed data dictionary to get to 'labels' where version is stored 
         
-        # we then retrieve the 'labels' info              # issue due to trying to loop over labels as if they were individual items, and not part of the 'parsed_data' dictionary.
+        # we then retrieve the 'labels' info              
         label_info = image_data.get('labels', [])
 
         # loop through the list of labels 
@@ -76,11 +80,13 @@ def versions():
                 continue
 
 
-    print(version)                
-
+    print(version)        
+    print("")
+    print("")        
+    return version
     
 
-# function to determine the version of each image 
+# function to determine the release of each image 
 def release():
     # list to store release info
     release = []
@@ -113,9 +119,23 @@ def release():
                 continue
 
 
-    print(release)     
-    
-    
+    print(release)
+    print("")
+    print("")     
+    return release
+
+
+
+def find_Newest(times, res_vers, res_release):
+
+    # first we are going to create our dictionary by merging the three lists: times, res_release, res_vers
+    # we are going to use zip(), loop, defaultdict() 
+    solution = defaultdict(list)
+    # then we are going to loop over the three lists simultaneously 
+    for a, b, c in zip(times, res_vers, res_release,):
+        solution[a].append((b,c))
+
+    print("The merged key value dictionary is : " + str(dict(solution)))
 
 
 
@@ -133,22 +153,8 @@ if __name__ == "__main__":
     times = image_Times()
     res_release = release()
     res_vers = versions()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
+    comb_time_rel_vers = find_Newest(times, res_vers, res_release)
 
 
     
