@@ -4,8 +4,6 @@ from datetime import *
 from collections import defaultdict 
  
 
-
-
 # function to determine the published_date of each image
 def image_Times(text):
 
@@ -183,11 +181,11 @@ def find_Newest(times, res_vers, res_release, vcs_ref, fresh_grade):
 
 
 # final function to print our final answer
-def printing(input_list):
+def printing(input_dict):
     # create a new list for answer
     answer = []
     # loop over our inputted dictionary using the key value pair x,y
-    for x, y in input_list.items():
+    for x, y in input_dict.items():
         dict = {
             "contentStream": x,   # x is our key, y are our values
             "vcsRef": y[2],
@@ -237,8 +235,3 @@ if __name__ == "__main__":
 
     # function to print our final answer
     printing(comb_time_rel_vers)
-
-
-    
-
-
